@@ -89,23 +89,53 @@ F.Intrinsic.Control.Try
 '	Function.Intrinsic.UI.UsePixels ' Allows you to use Pixels instead of Twips throughout
 	F.ODBC.Connection!con.OpenCompanyConnection
 	
+	'Open maintanance when project is ran from menu item (menu item flag must be set to "Maint")
 	F.Intrinsic.Control.If(V.Caller.Switches, =, "Maint")
 		F.Intrinsic.Control.CallSub(LoadWCtoBIN)
 		F.Intrinsic.Control.CallSub(LoadPLOmit)
 		GUI.Form.tabMain.SetTab(0)
 		GUI.Form..Show
-		
+
+	'If project is ran from OLU post process hook run bin to bin transfer logic.
+'	F.Intrinsic.Control.ElseIf(V.Caller.Hook, =, 38130)
 	F.Intrinsic.Control.Else
+		'Check PID (to ensure script is not still stuck running from previous launch)
+		F.Intrinsic.Control.CallSub(ManagePID)
+		'Run logic to capture J52s and bin to bin transfers if any
 		F.Intrinsic.Control.CallSub(CaptureJ52s)
 		
 	F.Intrinsic.Control.EndIf
-	
-	
 	
 F.Intrinsic.Control.Catch
 	F.Intrinsic.Control.CallSub(Catching,"Sub",V.Ambient.CurrentSubroutine,"ErrorNo",V.Ambient.ErrorNumber,"ErrorDesc",V.Ambient.ErrorDescription) 
 F.Intrinsic.Control.EndTry
 Program.Sub.Main.End
+
+Program.Sub.ManagePID.Start
+F.Intrinsic.Control.Try
+
+	V.Local.sPrevPID.Declare(String)
+	V.Local.sCurrPID.Declare(String)
+	V.Local.bRunning.Declare(Boolean)
+	
+	'Read previous PID if any
+	F.Global.Registry.ReadValue(-1, V.Caller.CompanyCode, "GAB_7642", "7642", 1, 5, False, V.Local.sPrevPID)
+	F.Intrinsic.Control.If(V.Local.sPrevPID, !=, False)
+		'If PID returns check if its running
+		F.Intrinsic.Task.PIDRunning(V.Local.sPrevPID, V.Local.bRunning)
+		F.Intrinsic.Control.If(V.Local.bRunning, =, True)
+			F.Intrinsic.Task.TerminatePID(V.Loca.sPID)
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.EndIf
+	
+	'Write new PID to registry
+	V.Local.sCurrPID.Set(V.Ambient.PID)
+	F.Global.Registry.AddValue(-1, V.Caller.CompanyCode, "GAB_7642", "7642", 1, False, V.Local.sCurrPID, False, 0, -999.0, V.Ambient.Date, V.Ambient.Time)
+	
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(Catching,"Sub",V.Ambient.CurrentSubroutine,"ErrorNo",V.Ambient.ErrorNumber,"ErrorDesc",V.Ambient.ErrorDescription) 
+F.Intrinsic.Control.EndTry
+Program.Sub.ManagePID.End
 
 Program.Sub.ProcessTransfers.Start
 F.Intrinsic.Control.Try
@@ -113,6 +143,8 @@ F.Intrinsic.Control.Try
 	V.Local.sSql.Declare(String)
 	V.Local.sRet.Declare(String)
 	V.Local.sMsg.Declare(String)
+	V.Local.sPart.Declare(String)
+	V.Local.sMachine.Declare(String)
 	V.Local.iCount.Declare(Long)
 	V.Local.sFilePath.Declare(String)
 	V.Local.sFileName.Declare(String)
@@ -121,26 +153,27 @@ F.Intrinsic.Control.Try
 	V.Local.sToBin.Declare(String)
 	V.Local.bCheck.Declare(Boolean)
 	
-	
 	'Format today's date (YYYYMMDD)
 	F.Intrinsic.String.Format(V.Ambient.Date, "YYYYMMDD", V.Local.sDate)
 	
 	'Loop captured J52s table to process all needed transfers
 	F.Intrinsic.Control.For(V.Local.iCount, 0, V.DataTable.dtJ52s.RowCount--, 1)
-		
+
 		'Query item master to ensure current bin has enough qty to transfer out
 		'------------------------------------------------------------------------------------------------------
 		F.Intrinsic.String.Build("Select QUANTITY from ITEM_MASTER where PART = '{0}' and BIN = '{1}' and LOCATION = '{2}'", V.DataTable.dtJ52s(V.Local.iCount).PART!FieldValTrim, V.DataTable.dtJ52s(V.Local.iCount).BIN!FieldValTrim, V.DataTable.dtJ52s(V.Local.iCount).LOCATION!FieldValTrim, V.Local.sSql)
 		F.ODBC.Connection!con.ExecuteAndReturn(V.Local.sSql, V.Local.sRet)
 		
 		F.Intrinsic.Control.If(V.Ambient.ExecuteAndReturnEOF, =, True)
-			F.Intrinsic.String.Build("Reported Part {0} Bin {1} Loc {2} combination on Job {3}-{4} does not exist", V.DataTable.dtJ52s(V.Local.iCount).PART!FieldValTrim, V.DataTable.dtJ52s(V.Local.iCount).BIN!FieldValTrim, V.DataTable.dtJ52s(V.Local.iCount).LOCATION!FieldValTrim, V.DataTable.dtJ52s(V.Local.iCount).JOB!FieldValTrim, V.DataTable.dtJ52s(V.Local.iCount).SUFFIX!FieldValTrim, V.Local.sMsg)
-			F.Intrinsic.UI.Msgbox(V.Local.sMsg, "")
+			F.Intrinsic.String.Build("JOB: '{0}-{1}' PART: '{2}' LOC: '{3}' FROM-BIN: '{4}' TRANS QTY: '{5}' -- Reported 'from-bin' on job not found in Bin Master list.", V.DataTable.dtJ52s(V.Local.iCount).JOB!FieldValTrim, V.DataTable.dtJ52s(V.Local.iCount).SUFFIX!FieldValTrim, V.DataTable.dtJ52s(V.Local.iCount).PART!FieldValTrim, V.DataTable.dtJ52s(V.Local.iCount).LOCATION!FieldValTrim, V.DataTable.dtJ52s(V.Local.iCount).BIN!FieldValTrim, V.DataTable.dtJ52s(V.Local.iCount).QUANTITY!FieldValTrim, V.Local.sMsg)
+			F.Intrinsic.Control.CallSub(Logging, "Msg", V.Local.sMsg)
 			F.Intrinsic.Control.GoTo("ErrorBypass")
 			
 		F.Intrinsic.Control.ElseIf(V.DataTable.dtJ52s(V.Local.iCount).QUANTITY!FieldValTrim, >, V.Local.sRet)
-			F.Intrinsic.String.Build("Qty. for Part {0} in Bin {1} is not sufficient to make a transfer. Qty in Bin at time of proces {2}. Required qty. reported on job {3}", V.DataTable.dtJ52s(V.Local.iCount).PART!FieldValTrim, V.DataTable.dtJ52s(V.Local.iCount).BIN!FieldValTrim, V.Local.sRet.Trim, V.DataTable.dtJ52s(V.Local.iCount).QUANTITY!FieldValTrim, V.Local.sMsg)
-			F.Intrinsic.UI.Msgbox(V.Local.sMsg, "")
+			F.Intrinsic.String.Build("JOB: '{0}-{1}' PART: '{2}' LOC: '{3}' FROM-BIN: '{4}' TRANS QTY: '{5}' -- Not enough quantity in 'from-bin' at time of transfer.", V.DataTable.dtJ52s(V.Local.iCount).JOB!FieldValTrim, V.DataTable.dtJ52s(V.Local.iCount).SUFFIX!FieldValTrim, V.DataTable.dtJ52s(V.Local.iCount).PART!FieldValTrim, V.DataTable.dtJ52s(V.Local.iCount).LOCATION!FieldValTrim, V.DataTable.dtJ52s(V.Local.iCount).BIN!FieldValTrim, V.DataTable.dtJ52s(V.Local.iCount).QUANTITY!FieldValTrim, V.Local.sMsg)
+			'Send fail message to logging sub
+			F.Intrinsic.Control.CallSub(Logging, "Msg", V.Local.sMsg)
+			
 			F.Intrinsic.Control.GoTo("ErrorBypass")
 		F.Intrinsic.Control.EndIf
 		'------------------------------------------------------------------------------------------------------
@@ -148,77 +181,161 @@ F.Intrinsic.Control.Try
 		'Capture Work Center for transaction from job Detail
 		'------------------------------------------------------------------------------------------------------
 		F.Intrinsic.String.Build("Select TOP 1 MACHINE from V_JOB_DETAIL where JOB = '{0}' and SUFFIX = '{1}' and LMO = 'L' and PIECES_COMPLTD = '{2}'", V.DataTable.dtJ52s(V.Local.iCount).JOB!FieldValTrim, V.DataTable.dtJ52s(V.Local.iCount).SUFFIX!FieldValTrim, V.DataTable.dtJ52s(V.Local.iCount).QUANTITY!FieldValTrim, V.Local.sSql)
-		F.ODBC.Connection!con.ExecuteAndReturn(V.Local.sSql, V.Local.sRet)
+		F.ODBC.Connection!con.ExecuteAndReturn(V.Local.sSql, V.Local.sMachine)
 		
+		'If job detail record does not return for J52 transaction, log and skip
 		F.Intrinsic.Control.If(V.Ambient.ExecuteAndReturnEOF, =, True)
-			F.Intrinsic.String.Build("No job detail record found for J52 on Job {0}-{1} Part {2} Quantity {3}", V.DataTable.dtJ52s(V.Local.iCount).JOB!FieldValTrim, V.DataTable.dtJ52s(V.Local.iCount).SUFFIX!FieldValTrim, V.DataTable.dtJ52s(V.Local.iCount).PART!FieldValTrim, V.DataTable.dtJ52s(V.Local.iCount).QUANTITY!FieldValTrim, V.Local.sMsg)
-			F.Intrinsic.UI.Msgbox(V.Local.sMsg, "")
+			F.Intrinsic.String.Build("JOB: '{0}-{1}' PART: '{2}' LOC: '{3}' FROM-BIN: '{4}' TRANS QTY: '{5}' -- No Job detail record found for J52 transaction on job", V.DataTable.dtJ52s(V.Local.iCount).JOB!FieldValTrim, V.DataTable.dtJ52s(V.Local.iCount).SUFFIX!FieldValTrim, V.DataTable.dtJ52s(V.Local.iCount).PART!FieldValTrim, V.DataTable.dtJ52s(V.Local.iCount).LOCATION!FieldValTrim, V.DataTable.dtJ52s(V.Local.iCount).BIN!FieldValTrim, V.DataTable.dtJ52s(V.Local.iCount).QUANTITY!FieldValTrim, V.Local.sMsg)
+			F.Intrinsic.Control.CallSub(Logging, "Msg", V.Local.sMsg)
 			F.Intrinsic.Control.GoTo("ErrorBypass")
 			
-		'Use captured WC to find possibly designated BIN in custom table
-		F.Intrinsic.Control.Else
-			F.Intrinsic.String.Build("Select BIN from GCG_7642_WC_BIN where WORKCENTER = '{0}'", V.Local.sRet, V.Local.sSql)
-			F.ODBC.Connection!con.ExecuteAndReturn(V.Local.sSql, V.Local.sToBin)
-			F.Intrinsic.Control.If(V.Ambient.ExecuteAndReturnEOF, =, True)
-				'No designated BIN to transfer to, skip record
-				F.Intrinsic.Control.GoTo("ErrorBypass")
-			
-			F.Intrinsic.Control.Else
-				'Add line to bin to bin transfer file for use with LOT054UP. File format expected by transfer program as follows (Part,From Location,Qty,From Bin,To Bin,Lot,Heat,Serial,?,?,To Location,Y,UserName,Date(YYYYMMDD))
-				F.Intrinsic.Control.If(V.Local.sToFile, =, "")
-					F.Intrinsic.String.Build("{0},{1},{2},{3},{4},,,,,,{1},Y,{5},{6}", V.DataTable.dtJ52s(V.Local.iCount).PART!FieldValTrim, V.DataTable.dtJ52s(V.Local.iCount).LOCATION!FieldValTrim, V.DataTable.dtJ52s(V.Local.iCount).QUANTITY!FieldValTrim, V.DataTable.dtJ52s(V.Local.iCount).BIN!FieldValTrim, V.Local.sToBin.Trim, V.Caller.User, V.Local.sDate, V.Local.sToFile)
-				F.Intrinsic.Control.Else
-					F.Intrinsic.String.Build("{8}{7}{0},{1},{2},{3},{4},,,,,,{1},Y,{5},{6}", V.DataTable.dtJ52s(V.Local.iCount).PART!FieldValTrim, V.DataTable.dtJ52s(V.Local.iCount).LOCATION!FieldValTrim, V.DataTable.dtJ52s(V.Local.iCount).QUANTITY!FieldValTrim, V.DataTable.dtJ52s(V.Local.iCount).BIN!FieldValTrim, V.Local.sToBin.Trim, V.Caller.User, V.Local.sDate,  V.Ambient.NewLine, V.Local.sToFile, V.Local.sToFile)
-				F.Intrinsic.Control.EndIf
-				
-			F.Intrinsic.Control.EndIf
 		F.Intrinsic.Control.EndIf
 		
+		'Use captured WC to find possibly designated BIN in custom table, skip if none is assigned
+		F.Intrinsic.String.Build("Select BIN from GCG_7642_WC_BIN where WORKCENTER = '{0}'", V.Local.sMachine, V.Local.sSql)
+		F.ODBC.Connection!con.ExecuteAndReturn(V.Local.sSql, V.Local.sToBin)
+		F.Intrinsic.Control.If(V.Ambient.ExecuteAndReturnEOF, =, True)
+			'No designated BIN to transfer to, skip record
+			F.Intrinsic.Control.GoTo("ErrorBypass")
+		F.Intrinsic.Control.EndIf
+
+		'Ensure captured WC has a valid designated bin
+		F.Intrinsic.String.Build("Select BIN from BIN_MASTER where BIN = '{0}'", V.Local.sToBin.Trim, V.Local.sSql)
+		F.ODBC.Connection!con.ExecuteAndReturn(V.Local.sSql, V.Local.sRet)
+		F.Intrinsic.Control.If(V.Ambient.ExecuteAndReturnEOF, =, True)
 		
-		
-		F.Intrinsic.Control.Label("ErrorBypass")
-	
+			F.Intrinsic.String.Build("JOB: '{0}-{1}' WC: '{7}' PART: '{2}' LOC: '{3}' FROM-BIN: '{4}' TO-BIN: '{5}' TRANS QTY: '{6}' -- Designated 'to-bin' does not exist in Bin Master", V.DataTable.dtJ52s(V.Local.iCount).JOB!FieldValTrim, V.DataTable.dtJ52s(V.Local.iCount).SUFFIX!FieldValTrim, V.DataTable.dtJ52s(V.Local.iCount).PART!FieldValTrim, V.DataTable.dtJ52s(V.Local.iCount).LOCATION!FieldValTrim, V.DataTable.dtJ52s(V.Local.iCount).BIN!FieldValTrim, V.Local.sToBin.Trim, V.DataTable.dtJ52s(V.Local.iCount).QUANTITY!FieldValTrim, V.Local.sMachine.Trim, V.Local.sMsg)
+			F.Intrinsic.Control.CallSub(Logging, "Msg", V.Local.sMsg)
+			F.Intrinsic.Control.GoTo("ErrorBypass")
+			
+		F.Intrinsic.Control.Else
+			'Pad part number to 20 chars
+			F.Intrinsic.String.RPad(V.DataTable.dtJ52s(V.Local.iCount).PART!FieldValTrim, " ", 20, V.Local.sPart)
+			'Add line to bin to bin transfer file for use with LOT054UP. File format expected by transfer program as follows (Part,From Location,Qty,From Bin,To Bin,Lot,Heat,Serial,?,?,To Location,Y,UserName,Date(YYYYMMDD))
+			F.Intrinsic.Control.If(V.Local.sToFile, =, "")
+				F.Intrinsic.String.Build("{0}{7},{7}{1}{7},{7}{2}{7},{7}{3}{7},{7}{4}{7},{7}{7},{7}{7},{7}{7},{7}{7},{7}{7},{7}{1}{7},{7}Y{7},{7}{5}{7},{7}{6}{8}", V.Local.sPart, V.DataTable.dtJ52s(V.Local.iCount).LOCATION!FieldValTrim, V.DataTable.dtJ52s(V.Local.iCount).QUANTITY!FieldValTrim, V.DataTable.dtJ52s(V.Local.iCount).BIN!FieldValTrim, V.Local.sToBin.Trim, V.Caller.User, V.Local.sDate, V.Ambient.DblQuote, V.Ambient.NewLine, V.Local.sToFile)
+			F.Intrinsic.Control.Else
+				F.Intrinsic.String.Build("{8}{0}{9},{9}{1}{9},{9}{2}{9},{9}{3}{9},{9}{4}{9},{9}{9},{9}{9},{9}{9},{9}{9},{9}{9},{9}{1}{9},{9}Y{9},{9}{5}{9},{9}{6}{7}", V.Local.sPart, V.DataTable.dtJ52s(V.Local.iCount).LOCATION!FieldValTrim, V.DataTable.dtJ52s(V.Local.iCount).QUANTITY!FieldValTrim, V.DataTable.dtJ52s(V.Local.iCount).BIN!FieldValTrim, V.Local.sToBin.Trim, V.Caller.User, V.Local.sDate, V.Ambient.NewLine, V.Local.sToFile, V.Ambient.DblQuote, V.Local.sToFile)
+			F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.EndIf
+			
+	F.Intrinsic.Control.Label("ErrorBypass")
 	F.Intrinsic.Control.Next(V.Local.iCount)
-	Function.Intrinsic.Debug.InvokeDebugger
-	Function.Intrinsic.Debug.Stop
 	
-	'Set transfer file name
-	V.Local.sFileName.Set("BinToBinTransfers_7642")
-	'Ensure transfer file does not already exist, delete if so
-	F.Intrinsic.String.Build("{0}\{1}", V.Caller.FilesDir, V.Local.sFileName, V.Local.sFilePath)
-	F.Intrinsic.File.Exists(V.Local.sFilePath, V.Local.bCheck)
-	F.Intrinsic.Control.If(V.Local.bCheck, =, True)
-		F.Intrinsic.File.DeleteFile(V.Local.sFilePath)
+	'If records to transfer were written create file and run LOT054UP
+	F.Intrinsic.Control.If(V.Local.sToFile, !=, "")
+		'Set transfer file name
+		F.Intrinsic.String.Concat("W", V.Caller.CompanyCode, V.Caller.Terminal, "BIN2BINTRNS", V.Local.sFileName)
+		'Ensure transfer file does not already exist, delete if so
+		F.Intrinsic.String.Build("{0}\{1}", V.Caller.FilesDir, V.Local.sFileName, V.Local.sFilePath)
+		F.Intrinsic.File.Exists(V.Local.sFilePath, V.Local.bCheck)
+		F.Intrinsic.Control.If(V.Local.bCheck, =, True)
+			F.Intrinsic.File.DeleteFile(V.Local.sFilePath)
+		F.Intrinsic.Control.EndIf
+		
+		'Save transfer data to file
+		F.Intrinsic.File.String2File(V.Local.sFilePath, V.Local.sToFile)
+		
+		F.Intrinsic.Task.LaunchGSSSync("LOT054UP", "", V.Local.sFileName)
+		
 	F.Intrinsic.Control.EndIf
 	
-	'Save transfer data to file
-	F.Intrinsic.File.String2File(V.Local.sFilePath, V.Local.sToFile)
-	Function.Intrinsic.Debug.InvokeDebugger
-	Function.Intrinsic.Debug.Stop
-	F.Intrinsic.Task.LaunchGSSSync("LOT054UP","-c",V.Local.sFileName)
-	
-
 F.Intrinsic.Control.Catch
 	F.Intrinsic.Control.CallSub(Catching,"Sub",V.Ambient.CurrentSubroutine,"ErrorNo",V.Ambient.ErrorNumber,"ErrorDesc",V.Ambient.ErrorDescription) 
 F.Intrinsic.Control.EndTry
 Program.Sub.ProcessTransfers.End
 
+Program.Sub.Logging.Start
+F.Intrinsic.Control.Try
+	
+	V.Local.bCheck.Declare(Boolean)
+	V.Local.sDirPath.Declare(String)
+	V.Local.sCurrDate.Declare(String)
+	V.Local.sFilePath.Declare(String)
+	V.Local.sFileContents.Declare(String)
+	V.Local.sTime.Declare(String)
+	V.Local.sMsg.Declare(String)
+	
+	'Create directory if not already present
+	F.Intrinsic.String.Build("{0}\CUSTOM\7642\{1}", V.Caller.GlobalDir, V.Caller.CompanyCode, V.Local.sDirPath)
+	F.Intrinsic.File.DirExists(V.Local.sDirPath, V.Local.bCheck)
+	F.Intrinsic.Control.If(V.Local.bCheck, =, False)
+		F.Intrinsic.File.CreateDir(V.Local.sDirPath)
+	F.Intrinsic.Control.EndIf
+	
+	'Create file for today's date if not already present
+	F.Intrinsic.String.Format(V.Ambient.Date, "MM-DD-YYYY", V.Local.sCurrDate)
+	F.Intrinsic.String.Build("{0}\FailedTransfers_{1}.txt", V.Local.sDirPath, V.Local.sCurrDate, V.Local.sFilePath)
+	F.Intrinsic.File.Exists(V.Local.sFilePath, V.Local.bCheck)
+	F.Intrinsic.Control.If(V.Local.bCheck, =, False)
+		F.Intrinsic.String.Build("Failed bin to bin transfers {0}:", V.Local.sCurrDate, V.Local.sMsg)
+		F.Intrinsic.File.String2File(V.Local.sFilePath, V.Local.sMsg)
+	F.Intrinsic.Control.EndIf
+	
+	'Write current time
+	F.Intrinsic.String.Format(V.Ambient.Now, "HH:NN:SS", V.Local.sTime)
+	
+	'Read all contents currently in file
+	F.Intrinsic.File.File2String(V.Local.sFilePath, V.Local.sFileContents)
+	'Write new line to file contents
+	F.Intrinsic.String.Build("{0}{1}{2} -- {3}", V.Local.sFileContents, V.Ambient.NewLine, V.Local.sTime, V.Args.Msg, V.Local.sFileContents)
+	'Write contents back to file
+	F.Intrinsic.File.String2File(V.Local.sFilePath, V.Local.sFileContents)
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(Catching,"Sub",V.Ambient.CurrentSubroutine,"ErrorNo",V.Ambient.ErrorNumber,"ErrorDesc",V.Ambient.ErrorDescription) 
+F.Intrinsic.Control.EndTry
+Program.Sub.Logging.End
+
 Program.Sub.CaptureJ52s.Start
 F.Intrinsic.Control.Try
 
 	V.Local.sSql.Declare(String)
+	V.Local.dDefaultDate.Declare(Date)
+	V.Local.dDefaultTime.Declare(Date)
+	V.Local.dLastTime.Declare(Date)
+	V.Local.dLastDate.Declare(Date)
 	V.Local.fOLULastRan.Declare(Float)
 	V.Local.iOLUInterval.Declare(Long)
+	V.Local.sDateAndTime.Declare(String)
+	V.Local.sFromTime.Declare(String)
+	V.Local.fSeconds.Declare(Float)
 	
-	'Get OLU time last ran and interval
+	'Capture OLU last ran date and time
+	'---------------------------------------------------------------------------------------------
+	'Get OLU date and time last ran
 	F.Global.General.ReadOption(400956, 2, "", 0000, V.Local.fOLULastRan)
+	'Split option return to convert into last ran date and time
+	F.Intrinsic.String.Split(V.Local.fOLULastRan, ".", V.Local.sDateAndTime)
+	
+	'Set default date value and add returned days to get date last ran
+	V.Local.dDefaultDate.Set("12/30/1899")	
+	F.Intrinsic.Date.DateAdd("D", V.Local.sDateAndTime(0), V.Local.dDefaultDate, V.Local.dLastDate)
+	
+	'Multiply returned decimal by 86400 to get time last ran
+	V.Local.dDefaultTime.Set("1/1/1900 00:00:00")
+	F.Intrinsic.String.Build(".{0}", V.Local.sDateAndTime(1), V.Local.sDateAndTime(1))
+	F.Intrinsic.Math.Mult(V.Local.sDateAndTime(1), 86400, V.Local.fSeconds)
+	F.Intrinsic.Date.DateAdd("S", V.Local.fSeconds, V.Local.dDefaultTime, V.Local.dLastTime)
+	
+	'Read option to get set OLU interval
 	F.Global.General.ReadOption(402233, 3, "NONE", 0000, V.Local.iOLUInterval)
+	'---------------------------------------------------------------------------------------------
 	
-	'Query data for latest J52 transactions
-'	F.Intrinsic.String.Build("Select JOB, SUFFIX, SEQUENCE,)
-	
-	V.Local.sSql.Set("Select (JOB + SUFFIX) JOBKEY, PART, LOCATION, JOB, SUFFIX, BIN, QUANTITY from V_ITEM_HISTORY where CODE_TRANSACTION = 'J52' and DATE_HISTORY > '2024-07-15' and DATE_HISTORY < '2024-12-01'")
+	'Generate time filter. Take time last rand and subtract OLU process interval
+	F.Intrinsic.Math.Mult(V.Local.iOLUInterval, -1, V.Local.iOLUInterval)
+	F.Intrinsic.Date.DateAdd("N", V.Local.iOLUInterval, V.Local.dLastTime, V.Local.dLastTime)
+	'Sub another 15 seconds buffer to account for script running time from last run
+	F.Intrinsic.Date.DateAdd("S", -15, V.Local.dLastTime, V.Local.dLastTime)
+	F.Intrinsic.String.Format(V.Local.dLastTime, "HH:NN:SS", V.Local.sFromTime)
+
+	'Query data for latest J52 transactions after generated date and time
+	F.Intrinsic.String.Build("Select (JOB + SUFFIX) JOBKEY, PART, LOCATION, JOB, SUFFIX, BIN, QUANTITY from V_ITEM_HISTORY where CODE_TRANSACTION = 'J52' and DATE_HISTORY >= '{0}' and TIME_ITEM_HISTORY > '{1}'", V.Local.dLastDate.PervasiveDate, V.Local.sFromTime, V.Local.sSql)
 	F.Data.DataTable.CreateFromSQL("dtJ52Temp", "con", V.Local.sSql, True)
+	Function.Intrinsic.Debug.InvokeDebugger
+	Function.Intrinsic.Debug.Stop
+	
+	'F.Data.DataTable.CreateFromSQL("dtJ52Temp", "con", "Select TOP 2 (JOB + SUFFIX) JOBKEY, PART, LOCATION, JOB, SUFFIX, BIN, QUANTITY from V_ITEM_HISTORY where CODE_TRANSACTION = 'J52' and DATE_HISTORY > '2024-7-10' and DATE_HISTORY < '2024-12-01'", True)
 	
 	'Capture PL for each job
 	F.Data.Dictionary.CreateFromSQL("dictPL", "con", "Select (JOB + SUFFIX) JOBKEY, PRODUCT_LINE from JOB_HEADER")
@@ -233,7 +350,7 @@ F.Intrinsic.Control.Try
 	F.Data.DataTable.AddColumn("dtJ52Temp", "PL_OMIT", "String")
 	F.Data.DataTable.FillFromDictionary("dtJ52Temp", "dictPLOmit", "PL", "PL_OMIT")
 	F.Data.Dictionary.Close("dictPLOmit")
-	
+
 	'Filter out omitted PLs
 	F.Data.DataView.Create("dtJ52Temp", "dvJ52s")
 	F.Data.DataView.SetFilter("dtJ52Temp", "dvJ52s", "[PL_OMIT] = ''")
@@ -242,19 +359,6 @@ F.Intrinsic.Control.Try
 	F.Intrinsic.Control.If(V.DataTable.dtJ52s.RowCount, >, 0)
 		F.Intrinsic.Control.CallSub(ProcessTransfers)
 	F.Intrinsic.Control.EndIf
-	
-'	'select PART, DATE_HISTORY, INV_HIST_TIME, CODE_TRANSACTION, BIN, QUANTITY, JOB, SUFFIX, SEQ  from "INVENTORY_HIST"
-'where code_transaction = 'J52' and job = 'P84899' and suffix = '122'
-'order by DATE_HISTORY desc;
-
-'Select * from V_INVENTORY_HIST
-'where CODE_TRANSACTION = 'J52' and DATE_HISTORY > '2024-07-11';
-''select * from "JOB_DETAIL"
-'where job = 'P85029' and suffix = '018' and seq = '999999';
-
-'select * from JOB_DETAIL;
-	'Capture all J52s since OLU last processed
-'	F.Intrinsic.String.Build("Select JOB, SUFFIX, BIN, QTY from V_ITEM_HISTORY where CODE_TRANSACTION = 'J52' and DATE_HISTORY > '2024-07-15' and DATE_HISTORY < '2024-12-01'", V.Local.sSql)
 
 F.Intrinsic.Control.Catch
 	F.Intrinsic.Control.CallSub(Catching,"Sub",V.Ambient.CurrentSubroutine,"ErrorNo",V.Ambient.ErrorNumber,"ErrorDesc",V.Ambient.ErrorDescription) 
@@ -567,6 +671,9 @@ F.Intrinsic.Control.Try
 			F.Intrinsic.Control.CallSub(LoadPLOmit)
 		F.Intrinsic.Control.EndIf
 		
+		'Clear productly line field
+		GUI.Form.txtPL.Text("")
+		
 	F.Intrinsic.Control.EndIf
 	F.Intrinsic.Control.UnBlockEvents()
 
@@ -598,5 +705,5 @@ Program.Sub.GSGGPLOmit_RowCellClick.End
 
 Program.Sub.Comments.Start
 ${$5$}$20.1.8902.21964$}$1
-${$6$}$atudon$}$20240730171518258$}$wHlNQNSPD/BybNtaCJPwGHNwUyiDpx8wkDYPKnBbboo+cuvA5Ro8iPf6Hk3kLx/OxQUF8xEJi6o=
+${$6$}$atudon$}$20240805161327928$}$wHlNQNSPD/BybNtaCJPwGHNwUyiDpx8wdUsix9MiMbPq5Y219m5hJPyQ/orrDdC78abH9/7DtLU=
 Program.Sub.Comments.End
