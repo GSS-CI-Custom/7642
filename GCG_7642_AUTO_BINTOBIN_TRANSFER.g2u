@@ -1,6 +1,6 @@
 ﻿Program.Sub.ScreenSU.Start
 Gui.Form..Create(BaseForm)
-Gui.Form..Caption("Form")
+Gui.Form..Caption("Auto Bin to Bin Trasfer Maint.")
 Gui.Form..Size(364,425)
 Gui.Form..MinX(0)
 Gui.Form..MinY(0)
@@ -30,23 +30,22 @@ Gui.Form.tabMain.SetTab(0)
 Gui.Form.tabMain.Caption("WC/BIN Relation")
 Gui.Form.tabMain.SetTab(1)
 Gui.Form.tabMain.Caption("PL Omit")
+Gui.Form.tabMain.Anchor(15)
 Gui.Form.lblProductLine.Create(Label,"Product Line:",True,63,13,0,6,33,True,0,"Tahoma",8.25,,0,0)
 Gui.Form.lblProductLine.BorderStyle(0)
 Gui.Form.lblProductLine.Parent("tabMain",1)
-Gui.Form.txtPL.Create(TextBox,"",True,46,20,0,70,30,True,0,"Tahoma",8.25,,1)
-Gui.Form.txtPL.Parent("tabMain",1)
-Gui.Form.txtPL.Event(LostFocus,txtPL_LostFocus)
-Gui.Form.cmdBrowsePL.Create(Button)
-Gui.Form.cmdBrowsePL.Enabled(True)
-Gui.Form.cmdBrowsePL.Visible(True)
-Gui.Form.cmdBrowsePL.Zorder(0)
-Gui.Form.cmdBrowsePL.Size(20,20)
-Gui.Form.cmdBrowsePL.Position(123,30)
-Gui.Form.cmdBrowsePL.Caption("BROWSE")
-Gui.Form.cmdBrowsePL.FontName("Tahoma")
-Gui.Form.cmdBrowsePL.FontSize(8.25)
-Gui.Form.cmdBrowsePL.Parent("tabMain",1)
-Gui.Form.cmdBrowsePL.Event(Click,cmdBrowsePL_Click)
+Gui.Form.lblProductLine2.Create(Label,"Product Lines in list will be ignored by Bin to Bin transfer program.",True,313,13,0,5,8,True,0,"Tahoma",8.25,,0,0)
+Gui.Form.lblProductLine2.BorderStyle(0)
+Gui.Form.lblProductLine2.Parent("tabMain",1)
+Gui.Form.GSGCGPLOmit.Create(GsGridControl)
+Gui.Form.GSGCGPLOmit.Enabled(True)
+Gui.Form.GSGCGPLOmit.Visible(True)
+Gui.Form.GSGCGPLOmit.Zorder(0)
+Gui.Form.GSGCGPLOmit.Size(354,301)
+Gui.Form.GSGCGPLOmit.Position(0,57)
+Gui.Form.GSGCGPLOmit.Parent("tabMain",1)
+Gui.Form.GSGCGPLOmit.Event(RowCellClick,GSGGPLOmit_RowCellClick)
+Gui.Form.GSGCGPLOmit.Anchor(15)
 Gui.Form.cmdAdd.Create(Button)
 Gui.Form.cmdAdd.Enabled(True)
 Gui.Form.cmdAdd.Visible(True)
@@ -58,17 +57,20 @@ Gui.Form.cmdAdd.FontName("Tahoma")
 Gui.Form.cmdAdd.FontSize(8.25)
 Gui.Form.cmdAdd.Parent("tabMain",1)
 Gui.Form.cmdAdd.Event(Click,cmdAdd_Click)
-Gui.Form.GSGCGPLOmit.Create(GsGridControl)
-Gui.Form.GSGCGPLOmit.Enabled(True)
-Gui.Form.GSGCGPLOmit.Visible(True)
-Gui.Form.GSGCGPLOmit.Zorder(0)
-Gui.Form.GSGCGPLOmit.Size(354,301)
-Gui.Form.GSGCGPLOmit.Position(0,57)
-Gui.Form.GSGCGPLOmit.Parent("tabMain",1)
-Gui.Form.GSGCGPLOmit.Event(RowCellClick,GSGGPLOmit_RowCellClick)
-Gui.Form.lblProductLine2.Create(Label,"Product Lines in list will be ignored by Bin to Bin transfer program.",True,313,13,0,5,8,True,0,"Tahoma",8.25,,0,0)
-Gui.Form.lblProductLine2.BorderStyle(0)
-Gui.Form.lblProductLine2.Parent("tabMain",1)
+Gui.Form.cmdBrowsePL.Create(Button)
+Gui.Form.cmdBrowsePL.Enabled(True)
+Gui.Form.cmdBrowsePL.Visible(True)
+Gui.Form.cmdBrowsePL.Zorder(0)
+Gui.Form.cmdBrowsePL.Size(20,20)
+Gui.Form.cmdBrowsePL.Position(123,30)
+Gui.Form.cmdBrowsePL.Caption("BROWSE")
+Gui.Form.cmdBrowsePL.FontName("Tahoma")
+Gui.Form.cmdBrowsePL.FontSize(8.25)
+Gui.Form.cmdBrowsePL.Parent("tabMain",1)
+Gui.Form.cmdBrowsePL.Event(Click,cmdBrowsePL_Click)
+Gui.Form.txtPL.Create(TextBox,"",True,46,20,0,70,30,True,0,"Tahoma",8.25,,1)
+Gui.Form.txtPL.Parent("tabMain",1)
+Gui.Form.txtPL.Event(LostFocus,txtPL_LostFocus)
 Gui.Form.GSGCWCtoBIN.Create(GsGridControl)
 Gui.Form.GSGCWCtoBIN.Enabled(True)
 Gui.Form.GSGCWCtoBIN.Visible(True)
@@ -78,6 +80,18 @@ Gui.Form.GSGCWCtoBIN.Position(0,0)
 Gui.Form.GSGCWCtoBIN.Parent("tabMain",0)
 Gui.Form.GSGCWCtoBIN.Event(RowCellClick,GSGCWCtoBIN_RowCellClick)
 Gui.Form.GSGCWCtoBIN.Event(CellValueChanged,GSGCWCtoBIN_CellValueChanged)
+Gui.Form.GSGCWCtoBIN.Anchor(15)
+Gui.Form.chkEnabled.Create(CheckBox)
+Gui.Form.chkEnabled.Enabled(True)
+Gui.Form.chkEnabled.Visible(True)
+Gui.Form.chkEnabled.Zorder(0)
+Gui.Form.chkEnabled.Size(142,20)
+Gui.Form.chkEnabled.Position(219,8)
+Gui.Form.chkEnabled.Caption("Auto Transfers Enabled")
+Gui.Form.chkEnabled.FontName("Tahoma")
+Gui.Form.chkEnabled.FontSize(8.25)
+Gui.Form.chkEnabled.Event(Click,chkEnabled_Click)
+Gui.Form.chkEnabled.Anchor(9)
 Program.Sub.ScreenSU.End
 
 Program.Sub.Preflight.Start
@@ -85,20 +99,31 @@ Program.Sub.Preflight.End
 
 Program.Sub.Main.Start
 F.Intrinsic.Control.Try
+	
+	V.Local.bCheck.Declare(Boolean)
 
-'	Function.Intrinsic.UI.UsePixels ' Allows you to use Pixels instead of Twips throughout
+	Function.Intrinsic.UI.UsePixels ' Allows you to use Pixels instead of Twips throughout
 	F.ODBC.Connection!con.OpenCompanyConnection
 	
 	'Open maintanance when project is ran from menu item (menu item flag must be set to "Maint")
 	F.Intrinsic.Control.If(V.Caller.Switches, =, "Maint")
+		'Load form grids
 		F.Intrinsic.Control.CallSub(LoadWCtoBIN)
 		F.Intrinsic.Control.CallSub(LoadPLOmit)
 		GUI.Form.tabMain.SetTab(0)
+		'Read enabled option value to populate checkbox on form accordingly
+		F.Global.Registry.ReadValue(-1, V.Caller.CompanyCode, "GAB_7642", "7642", 2, 0, False, V.Local.bCheck)		
+		GUI.Form.chkEnabled.Value(V.Local.bCheck)
 		GUI.Form..Show
 
 	'If project is ran from OLU post process hook run bin to bin transfer logic.
-'	F.Intrinsic.Control.ElseIf(V.Caller.Hook, =, 38130)
-	F.Intrinsic.Control.Else
+	F.Intrinsic.Control.ElseIf(V.Caller.Hook, =, 38130)
+		'Check enabled option, end if disabled
+		F.Global.Registry.ReadValue(-1, V.Caller.CompanyCode, "GAB_7642", "7642", 2, 0, False, V.Local.bCheck)
+		F.Intrinsic.Control.If(V.Local.bCheck, =, False)
+			F.Intrinsic.Control.End
+		F.Intrinsic.Control.EndIf
+		
 		'Check PID (to ensure script is not still stuck running from previous launch)
 		F.Intrinsic.Control.CallSub(ManagePID)
 		'Run logic to capture J52s and bin to bin transfers if any
@@ -113,7 +138,6 @@ Program.Sub.Main.End
 
 Program.Sub.ManagePID.Start
 F.Intrinsic.Control.Try
-
 	V.Local.sPrevPID.Declare(String)
 	V.Local.sCurrPID.Declare(String)
 	V.Local.bRunning.Declare(Boolean)
@@ -330,12 +354,12 @@ F.Intrinsic.Control.Try
 	F.Intrinsic.String.Format(V.Local.dLastTime, "HH:NN:SS", V.Local.sFromTime)
 
 	'Query data for latest J52 transactions after generated date and time
-	F.Intrinsic.String.Build("Select (JOB + SUFFIX) JOBKEY, PART, LOCATION, JOB, SUFFIX, BIN, QUANTITY from V_ITEM_HISTORY where CODE_TRANSACTION = 'J52' and DATE_HISTORY >= '{0}' and TIME_ITEM_HISTORY > '{1}'", V.Local.dLastDate.PervasiveDate, V.Local.sFromTime, V.Local.sSql)
-	F.Data.DataTable.CreateFromSQL("dtJ52Temp", "con", V.Local.sSql, True)
-	Function.Intrinsic.Debug.InvokeDebugger
-	Function.Intrinsic.Debug.Stop
+'	F.Intrinsic.String.Build("Select (JOB + SUFFIX) JOBKEY, PART, LOCATION, JOB, SUFFIX, BIN, QUANTITY from V_ITEM_HISTORY where CODE_TRANSACTION = 'J52' and DATE_HISTORY >= '{0}' and TIME_ITEM_HISTORY > '{1}'", V.Local.dLastDate.PervasiveDate, V.Local.sFromTime, V.Local.sSql)
+'	F.Data.DataTable.CreateFromSQL("dtJ52Temp", "con", V.Local.sSql, True)
 	
-	'F.Data.DataTable.CreateFromSQL("dtJ52Temp", "con", "Select TOP 2 (JOB + SUFFIX) JOBKEY, PART, LOCATION, JOB, SUFFIX, BIN, QUANTITY from V_ITEM_HISTORY where CODE_TRANSACTION = 'J52' and DATE_HISTORY > '2024-7-10' and DATE_HISTORY < '2024-12-01'", True)
+	V.Local.sSql.Set("Select TOP 3 (JOB + SUFFIX) JOBKEY, PART, LOCATION, JOB, SUFFIX, BIN, QUANTITY from V_ITEM_HISTORY where CODE_TRANSACTION = 'J52' and DATE_HISTORY > '2024-7-10' and DATE_HISTORY < '2024-12-01'")
+	
+	F.Data.DataTable.CreateFromSQL("dtJ52Temp", "con", V.Local.sSql, True)
 	
 	'Capture PL for each job
 	F.Data.Dictionary.CreateFromSQL("dictPL", "con", "Select (JOB + SUFFIX) JOBKEY, PRODUCT_LINE from JOB_HEADER")
@@ -372,7 +396,7 @@ F.Intrinsic.Control.Try
 	V.Local.sFieldNames.Declare(String)
 	V.Local.iCount.Declare(Long)
 	
-	F.Data.DataTable.CreateFromSQL("dtWC", "con", "Select MACHINE, '' BIN, '' LOC, '' BTN, '' OLD_BIN from WORKCENTERS order by MACHINE", True)
+	F.Data.DataTable.CreateFromSQL("dtWC", "con", "Select MACHINE, '' BIN, '' LOC, '' BTN, '' CLR, '' OLD_BIN from WORKCENTERS order by MACHINE", True)
 	
 	'Use dictionary to bring any existing relationships for WC and BIN
 	F.Data.Dictionary.CreateFromSQL("dictBIN", "con", "Select WORKCENTER, BIN from GCG_7642_WC_BIN")
@@ -405,15 +429,24 @@ F.Intrinsic.Control.Try
 	'Hide uneeded columns
 	GUI.Form.GSGCWCtoBIN.SetColumnProperty("gvWC", "OLD_BIN", "Visible", False)
 
-	'Set browse button on grid
+	'Set buttons on grid
 	GUI.Form.GSGCWCtoBIN.ColumnEdit("gvWC", "BTN", "EditorButton", "Browse")
 	GUI.Form.GSGCWCtoBIN.SetColumnProperty("gvWC", "BTN", "ShowCaption", False)
 	GUI.Form.GSGCWCtoBIN.SetColumnProperty("gvWC", "BTN", "CellBackColor", "LightGray")
 	GUI.Form.GSGCWCtoBIN.SetColumnProperty("gvWC", "BTN", "MaxWidth", 60)
 	GUI.Form.GSGCWCtoBIN.SetColumnProperty("gvWC", "BTN", "MinWidth", 60)
+	GUI.Form.GSGCWCtoBIN.ColumnEdit("gvWC", "CLR", "EditorButton", "Clear")
+	GUI.Form.GSGCWCtoBIN.SetColumnProperty("gvWC", "CLR", "ShowCaption", False)
+	GUI.Form.GSGCWCtoBIN.SetColumnProperty("gvWC", "CLR", "CellBackColor", "LightGray")
+	GUI.Form.GSGCWCtoBIN.SetColumnProperty("gvWC", "CLR", "MaxWidth", 60)
+	GUI.Form.GSGCWCtoBIN.SetColumnProperty("gvWC", "CLR", "MinWidth", 60)
 	
-	'Set width
-	GUI.Form.GSGCWCtoBIN.SetColumnProperty("gvWC", "BTN", "ShowCaption", False)
+	'Set widths
+	GUI.Form.GSGCWCtoBIN.SetColumnProperty("gvWC", "CLR", "MaxWidth", 35)
+	GUI.Form.GSGCWCtoBIN.SetColumnProperty("gvWC", "CLR", "MinWidth", 35)
+	GUI.Form.GSGCWCtoBIN.SetColumnProperty("gvWC", "BTN", "MaxWidth", 45)
+	GUI.Form.GSGCWCtoBIN.SetColumnProperty("gvWC", "BTN", "MinWidth", 45)
+	
 	
 	'Set captions
 	GUI.Form.GSGCWCtoBIN.SetColumnProperty("gvWC", "MACHINE", "Caption", "Workcenter")
@@ -495,24 +528,34 @@ F.Intrinsic.Control.Try
 	V.Local.sSql.Declare(String)
 	V.Local.sRet.Declare(String)
 	V.Local.sMsg.Declare(String)
+
+	F.Intrinsic.Control.SelectCase(V.Args.Mode)
 	
-	'Query for existence of WC in custom table
-	F.Intrinsic.String.Build("Select WORKCENTER from GCG_7642_WC_BIN where WORKCENTER = '{0}'", V.Args.WC, V.Local.sSql)
-	F.ODBC.Connection!con.ExecuteAndReturn(V.Local.sSql, V.Local.sRet)
-	
-	'If WC does not exist in table insert new record
-	F.Intrinsic.Control.If(V.Ambient.ExecuteAndReturnEOF, =, True)
-		F.Intrinsic.String.Build("Insert into GCG_7642_WC_BIN values ('{0}', '{1}', '{2}')", V.Args.WC, V.Args.BIN, V.Args.LOC, V.Local.sSql)
-		F.ODBC.Connection!con.Execute(V.Local.sSql)
-		F.Data.DataTable.SetValue("dtWC", V.Args.INDEX, "OLD_BIN", V.Args.BIN)
+	F.Intrinsic.Control.Case("UPDATE")
+		'Query for existence of WC in custom table
+		F.Intrinsic.String.Build("Select WORKCENTER from GCG_7642_WC_BIN where WORKCENTER = '{0}'", V.Args.WC, V.Local.sSql)
+		F.ODBC.Connection!con.ExecuteAndReturn(V.Local.sSql, V.Local.sRet)
 		
-	'If WC exists in table, update record
-	F.Intrinsic.Control.Else
-		F.Intrinsic.String.Build("Update GCG_7642_WC_BIN set BIN = '{0}', LOCATION = '{1}' where WORKCENTER = '{2}'", V.Args.BIN,  V.Args.LOC, V.Args.WC, V.Local.sSql)
-		F.ODBC.Connection!con.Execute(V.Local.sSql)
-		F.Data.DataTable.SetValue("dtWC", V.Args.INDEX, "OLD_BIN", V.Args.BIN)
+		'If WC does not exist in table insert new record
+		F.Intrinsic.Control.If(V.Ambient.ExecuteAndReturnEOF, =, True)
+			F.Intrinsic.String.Build("Insert into GCG_7642_WC_BIN values ('{0}', '{1}', '{2}')", V.Args.WC, V.Args.BIN, V.Args.LOC, V.Local.sSql)
+			F.ODBC.Connection!con.Execute(V.Local.sSql)
+			F.Data.DataTable.SetValue("dtWC", V.Args.INDEX, "OLD_BIN", V.Args.BIN)
+			
+		'If WC exists in table, update record
+		F.Intrinsic.Control.Else
+			F.Intrinsic.String.Build("Update GCG_7642_WC_BIN set BIN = '{0}', LOCATION = '{1}' where WORKCENTER = '{2}'", V.Args.BIN,  V.Args.LOC, V.Args.WC, V.Local.sSql)
+			F.ODBC.Connection!con.Execute(V.Local.sSql)
+			F.Data.DataTable.SetValue("dtWC", V.Args.INDEX, "OLD_BIN", V.Args.BIN)
+			
+		F.Intrinsic.Control.EndIf
 		
-	F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.Case("DELETE")
+		'Delete selected WC to BIN link
+		F.Intrinsic.String.Build("Delete from GCG_7642_WC_BIN where WORKCENTER = '{0}'", V.Args.WC, V.Local.sSql)
+		F.ODBC.Connection!con.Execute(V.Local.sSql)
+		
+	F.Intrinsic.Control.EndSelect
 	
 F.Intrinsic.Control.Catch
 	F.Intrinsic.Control.CallSub(Catching,"Sub",V.Ambient.CurrentSubroutine,"ErrorNo",V.Ambient.ErrorNumber,"ErrorDesc",V.Ambient.ErrorDescription) 
@@ -527,6 +570,7 @@ F.Intrinsic.Control.Try
 	F.Intrinsic.Control.BlockEvents()
 	F.Intrinsic.Control.SelectCase(V.Args.Column)
 	
+	'If a BIN was selected, save WC to BIN link to table
 	F.Intrinsic.Control.Case("BTN")
 		F.Intrinsic.UI.Browser(150, V.Local.sRet)
 		F.Intrinsic.Control.If(V.Local.sRet, !=, "***CANCEL***")
@@ -535,7 +579,17 @@ F.Intrinsic.Control.Try
 			F.Data.DataTable.SetValue("dtWC", V.Args.RowIndex, "LOC", V.Local.sRet(1))
 		F.Intrinsic.Control.EndIf
 		
-		F.Intrinsic.Control.CallSub(SaveLink, "WC", V.DataTable.dtWC(V.Args.RowIndex).MACHINE!FieldValTrim, "BIN", V.DataTable.dtWC(V.Args.RowIndex).BIN!FieldValTrim, "LOC", V.DataTable.dtWC(V.Args.RowIndex).LOC!FieldValTrim, "INDEX", V.Args.RowIndex)
+		F.Intrinsic.Control.CallSub(SaveLink, "WC", V.DataTable.dtWC(V.Args.RowIndex).MACHINE!FieldValTrim, "BIN", V.DataTable.dtWC(V.Args.RowIndex).BIN!FieldValTrim, "LOC", V.DataTable.dtWC(V.Args.RowIndex).LOC!FieldValTrim, "INDEX", V.Args.RowIndex, "MODE", "UPDATE")
+		
+	'Clear selected WC to BIN link if any
+	F.Intrinsic.Control.Case("CLR")
+		F.Intrinsic.Control.If(V.DataTable.dtWC(V.Args.RowIndex).BIN!FieldValTrim, !=, "")
+			F.Intrinsic.Control.CallSub(SaveLink, "WC", V.DataTable.dtWC(V.Args.RowIndex).MACHINE!FieldValTrim, "BIN", V.DataTable.dtWC(V.Args.RowIndex).BIN!FieldValTrim, "LOC", V.DataTable.dtWC(V.Args.RowIndex).LOC!FieldValTrim, "INDEX", V.Args.RowIndex, "MODE", "DELETE")
+			
+			F.Data.DataTable.SetValue("dtWC", V.Args.RowIndex, "BIN", "")
+			F.Data.DataTable.SetValue("dtWC", V.Args.RowIndex, "LOC", "")
+			
+		F.Intrinsic.Control.EndIf
 		
 	F.Intrinsic.Control.EndSelect
 	F.Intrinsic.Control.UnBlockEvents()
@@ -703,7 +757,23 @@ F.Intrinsic.Control.CallSub(Catching,"Sub",V.Ambient.CurrentSubroutine,"ErrorNo"
 F.Intrinsic.Control.EndTry
 Program.Sub.GSGGPLOmit_RowCellClick.End
 
+Program.Sub.chkEnabled_Click.Start
+F.Intrinsic.Control.Try
+	
+	F.Intrinsic.Control.BlockEvents()
+	V.Local.bCheck.Declare(Boolean)
+	
+	V.Local.bCheck.Set(V.Screen.Form!chkEnabled.CheckedAsBoolean)
+	
+	F.Global.Registry.AddValue(-1, V.Caller.CompanyCode, "GAB_7642", "7642", 2, False, "", V.Local.bCheck, 0, -999.0, V.Ambient.Date, V.Ambient.Time)
+	F.Intrinsic.Control.UnBlockEvents()
+
+F.Intrinsic.Control.Catch
+F.Intrinsic.Control.CallSub(Catching,"Sub",V.Ambient.CurrentSubroutine,"ErrorNo",V.Ambient.ErrorNumber,"ErrorDesc",V.Ambient.ErrorDescription) 
+F.Intrinsic.Control.EndTry
+Program.Sub.chkEnabled_Click.End
+
 Program.Sub.Comments.Start
-${$5$}$20.1.8902.21964$}$1
-${$6$}$atudon$}$20240805161327928$}$wHlNQNSPD/BybNtaCJPwGHNwUyiDpx8wdUsix9MiMbPq5Y219m5hJPyQ/orrDdC78abH9/7DtLU=
+${$5$}$20.1.8965.27978$}$1
+${$6$}$atudon$}$20240807132613524$}$wHlNQNSPD/BybNtaCJPwGHNwUyiDpx8wdUsix9MiMbMP80ysfU4TjB+v+cIA9sSUbbVhCd9Tt3w=
 Program.Sub.Comments.End

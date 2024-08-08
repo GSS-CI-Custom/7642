@@ -1,0 +1,34 @@
+select JOB, SUFFIX, PRODUCT_LINE from "JOB_HEADER"
+where job = '301455' and suffix = '006'
+union
+select JOB, SUFFIX, PRODUCT_LINE from "JOB_HEADER"
+where job = '301455' and suffix = '007'
+union
+select JOB, SUFFIX, PRODUCT_LINE from "JOB_HEADER"
+where job = '133455' and suffix = '014'
+
+
+
+Select TOP 3 (JOB + SUFFIX) JOBKEY, PART, DATE_HISTORY, LOCATION, JOB, SUFFIX, BIN, QUANTITY
+from V_ITEM_HISTORY 
+where CODE_TRANSACTION = 'J52' and DATE_HISTORY > '2024-7-10' and DATE_HISTORY < '2024-12-01';
+
+
+
+
+Select TOP 1 JOB, SUFFIX, MACHINE from V_JOB_DETAIL 
+where JOB = '301455' and SUFFIX = '006' and LMO = 'L' and PIECES_COMPLTD = '30'
+Union
+Select TOP 1 JOB, SUFFIX, MACHINE from V_JOB_DETAIL 
+where JOB = '301455' and SUFFIX = '007' and LMO = 'L' and PIECES_COMPLTD = '30'
+union
+Select TOP 1 JOB, SUFFIX, MACHINE from V_JOB_DETAIL 
+where JOB = '133455' and SUFFIX = '014' and LMO = 'L' and PIECES_COMPLTD = '1'
+
+
+
+
+
+
+
+
