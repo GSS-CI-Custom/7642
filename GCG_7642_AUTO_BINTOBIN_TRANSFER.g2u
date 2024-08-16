@@ -1,7 +1,7 @@
 ﻿Program.Sub.ScreenSU.Start
 Gui.Form..Create(BaseForm)
 Gui.Form..Caption("Auto Bin to Bin Trasfer Maint.")
-Gui.Form..Size(364,425)
+Gui.Form..Size(365,450)
 Gui.Form..MinX(0)
 Gui.Form..MinY(0)
 Gui.Form..Position(0,0)
@@ -25,38 +25,18 @@ Gui.Form.tabMain.Size(357,387)
 Gui.Form.tabMain.Position(4,4)
 Gui.Form.tabMain.FontName("Tahoma")
 Gui.Form.tabMain.FontSize(8.25)
+Gui.Form.tabMain.Anchor(15)
 Gui.Form.tabMain.Tabs(2)
 Gui.Form.tabMain.SetTab(0)
 Gui.Form.tabMain.Caption("WC/BIN Relation")
 Gui.Form.tabMain.SetTab(1)
 Gui.Form.tabMain.Caption("PL Omit")
-Gui.Form.tabMain.Anchor(15)
 Gui.Form.lblProductLine.Create(Label,"Product Line:",True,63,13,0,6,33,True,0,"Tahoma",8.25,,0,0)
 Gui.Form.lblProductLine.BorderStyle(0)
 Gui.Form.lblProductLine.Parent("tabMain",1)
-Gui.Form.lblProductLine2.Create(Label,"Product Lines in list will be ignored by Bin to Bin transfer program.",True,313,13,0,5,8,True,0,"Tahoma",8.25,,0,0)
-Gui.Form.lblProductLine2.BorderStyle(0)
-Gui.Form.lblProductLine2.Parent("tabMain",1)
-Gui.Form.GSGCGPLOmit.Create(GsGridControl)
-Gui.Form.GSGCGPLOmit.Enabled(True)
-Gui.Form.GSGCGPLOmit.Visible(True)
-Gui.Form.GSGCGPLOmit.Zorder(0)
-Gui.Form.GSGCGPLOmit.Size(354,301)
-Gui.Form.GSGCGPLOmit.Position(0,57)
-Gui.Form.GSGCGPLOmit.Parent("tabMain",1)
-Gui.Form.GSGCGPLOmit.Event(RowCellClick,GSGGPLOmit_RowCellClick)
-Gui.Form.GSGCGPLOmit.Anchor(15)
-Gui.Form.cmdAdd.Create(Button)
-Gui.Form.cmdAdd.Enabled(True)
-Gui.Form.cmdAdd.Visible(True)
-Gui.Form.cmdAdd.Zorder(0)
-Gui.Form.cmdAdd.Size(61,23)
-Gui.Form.cmdAdd.Position(154,29)
-Gui.Form.cmdAdd.Caption("ADD")
-Gui.Form.cmdAdd.FontName("Tahoma")
-Gui.Form.cmdAdd.FontSize(8.25)
-Gui.Form.cmdAdd.Parent("tabMain",1)
-Gui.Form.cmdAdd.Event(Click,cmdAdd_Click)
+Gui.Form.txtPL.Create(TextBox,"",True,46,20,0,70,30,True,0,"Tahoma",8.25,,1)
+Gui.Form.txtPL.Parent("tabMain",1)
+Gui.Form.txtPL.Event(LostFocus,txtPL_LostFocus)
 Gui.Form.cmdBrowsePL.Create(Button)
 Gui.Form.cmdBrowsePL.Enabled(True)
 Gui.Form.cmdBrowsePL.Visible(True)
@@ -68,9 +48,29 @@ Gui.Form.cmdBrowsePL.FontName("Tahoma")
 Gui.Form.cmdBrowsePL.FontSize(8.25)
 Gui.Form.cmdBrowsePL.Parent("tabMain",1)
 Gui.Form.cmdBrowsePL.Event(Click,cmdBrowsePL_Click)
-Gui.Form.txtPL.Create(TextBox,"",True,46,20,0,70,30,True,0,"Tahoma",8.25,,1)
-Gui.Form.txtPL.Parent("tabMain",1)
-Gui.Form.txtPL.Event(LostFocus,txtPL_LostFocus)
+Gui.Form.cmdAdd.Create(Button)
+Gui.Form.cmdAdd.Enabled(True)
+Gui.Form.cmdAdd.Visible(True)
+Gui.Form.cmdAdd.Zorder(0)
+Gui.Form.cmdAdd.Size(61,23)
+Gui.Form.cmdAdd.Position(154,29)
+Gui.Form.cmdAdd.Caption("ADD")
+Gui.Form.cmdAdd.FontName("Tahoma")
+Gui.Form.cmdAdd.FontSize(8.25)
+Gui.Form.cmdAdd.Parent("tabMain",1)
+Gui.Form.cmdAdd.Event(Click,cmdAdd_Click)
+Gui.Form.GSGCGPLOmit.Create(GsGridControl)
+Gui.Form.GSGCGPLOmit.Enabled(True)
+Gui.Form.GSGCGPLOmit.Visible(True)
+Gui.Form.GSGCGPLOmit.Zorder(0)
+Gui.Form.GSGCGPLOmit.Size(354,301)
+Gui.Form.GSGCGPLOmit.Position(0,57)
+Gui.Form.GSGCGPLOmit.Parent("tabMain",1)
+Gui.Form.GSGCGPLOmit.Event(RowCellClick,GSGGPLOmit_RowCellClick)
+Gui.Form.GSGCGPLOmit.Anchor(15)
+Gui.Form.lblProductLine2.Create(Label,"Product Lines in list will be ignored by Bin to Bin transfer program.",True,313,13,0,5,8,True,0,"Tahoma",8.25,,0,0)
+Gui.Form.lblProductLine2.BorderStyle(0)
+Gui.Form.lblProductLine2.Parent("tabMain",1)
 Gui.Form.GSGCWCtoBIN.Create(GsGridControl)
 Gui.Form.GSGCWCtoBIN.Enabled(True)
 Gui.Form.GSGCWCtoBIN.Visible(True)
@@ -92,6 +92,18 @@ Gui.Form.chkEnabled.FontName("Tahoma")
 Gui.Form.chkEnabled.FontSize(8.25)
 Gui.Form.chkEnabled.Event(Click,chkEnabled_Click)
 Gui.Form.chkEnabled.Anchor(9)
+Gui.Form.lblLastRan.Create(Label,"Auto Bin to Bin Transfer Last Ran:",True,163,13,0,6,398,True,0,"Tahoma",8.25,,0,0)
+Gui.Form.lblLastRan.BorderStyle(0)
+Gui.Form.cmdClearLastRanTime.Create(Button)
+Gui.Form.cmdClearLastRanTime.Enabled(True)
+Gui.Form.cmdClearLastRanTime.Visible(True)
+Gui.Form.cmdClearLastRanTime.Zorder(0)
+Gui.Form.cmdClearLastRanTime.Size(50,20)
+Gui.Form.cmdClearLastRanTime.Position(301,394)
+Gui.Form.cmdClearLastRanTime.Caption("CLEAR")
+Gui.Form.cmdClearLastRanTime.FontName("Tahoma")
+Gui.Form.cmdClearLastRanTime.FontSize(8.25)
+Gui.Form.cmdClearLastRanTime.Event(Click,cmdClearLastRanTime_Click)
 Program.Sub.ScreenSU.End
 
 Program.Sub.Preflight.Start
@@ -99,9 +111,14 @@ Program.Sub.Preflight.End
 
 Program.Sub.Main.Start
 F.Intrinsic.Control.Try
-	
-	V.Local.bCheck.Declare(Boolean)
 
+	V.Local.sDateLastRan.Declare(String)
+	V.Local.sTimeLastRan.Declare(String)
+	V.Local.sLabelCaption.Declare(String)
+	V.Local.dLastDate.Declare(Date)
+	V.Local.dLastTime.Declare(Date)
+	V.Local.bCheck.Declare(Boolean)
+	
 	Function.Intrinsic.UI.UsePixels ' Allows you to use Pixels instead of Twips throughout
 	F.ODBC.Connection!con.OpenCompanyConnection
 	
@@ -114,9 +131,26 @@ F.Intrinsic.Control.Try
 		'Read enabled option value to populate checkbox on form accordingly
 		F.Global.Registry.ReadValue(-1, V.Caller.CompanyCode, "GAB_7642", "7642", 2, 0, False, V.Local.bCheck)		
 		GUI.Form.chkEnabled.Value(V.Local.bCheck)
+		'Read time last ran values to build timestamp label
+		F.Global.Registry.ReadValue(-1, V.Caller.CompanyCode, "GAB_7642", "7642", 3, 3, "1/1/1905", V.Local.dLastDate)
+		F.Global.Registry.ReadValue(-1, V.Caller.CompanyCode, "GAB_7642", "7642", 3, 4, "00:00:00", V.Local.dLastTime)
+		F.Intrinsic.String.Format(V.Local.dLastDate, "MM/DD/YYYY", V.Local.sDateLastRan)
+		F.Intrinsic.String.Format(V.Local.dLastTime, "HH:NN:SS", V.Local.sTimeLastRan)
+		
+		'Display last ran time if any returns
+		F.Intrinsic.Control.If(V.Local.sDateLastRan, !=, "01/01/1905", AND, V.Loca.sTimeLastRan, !=, "00:00:00")
+			F.Intrinsic.String.Build("Auto Bin to Bin Transfer Last Ran: {0} {1}", V.Local.sDateLastRan, V.Local.sTimeLastRan, V.Local.sLabelCaption)
+			GUI.Form.lblLastRan.Caption(V.Local.sLabelCaption)
+			
+		'Else leave blank
+		F.Intrinsic.Control.Else
+			GUI.Form.lblLastRan.Caption("Auto Bin to Bin Transfer Last Ran: No Time Stored")
+			
+		F.Intrinsic.Control.EndIf
+		
 		GUI.Form..Show
 
-	'If project is ran from OLU post process hook run bin to bin transfer logic.
+	'If project is ran from OLU post process hook run bin to bin transfer logic
 	F.Intrinsic.Control.ElseIf(V.Caller.Hook, =, 38130)
 		'Check enabled option, end if disabled
 		F.Global.Registry.ReadValue(-1, V.Caller.CompanyCode, "GAB_7642", "7642", 2, 0, False, V.Local.bCheck)
@@ -311,6 +345,68 @@ F.Intrinsic.Control.Catch
 F.Intrinsic.Control.EndTry
 Program.Sub.Logging.End
 
+Program.Sub.GenerateLastRanTime.Start
+F.Intrinsic.Control.Try
+
+	V.Local.dDefaultDate.Declare(Date)
+	V.Local.dDefaultTime.Declare(Date)
+	V.Local.dLastTime.Declare(Date)
+	V.Local.dLastDate.Declare(Date)
+	V.Local.fOLULastRan.Declare(Float)
+	V.Local.iOLUInterval.Declare(Long)
+	V.Local.sDateAndTime.Declare(String)
+	V.Local.sFromTime.Declare(String)
+	V.Local.fSeconds.Declare(Float)
+	
+	'Read registry values to use as time last ran
+	F.Global.Registry.ReadValue(-1, V.Caller.CompanyCode, "GAB_7642", "7642", 3, 3, "1/1/1905", V.Local.dLastDate)
+	F.Global.Registry.ReadValue(-1, V.Caller.CompanyCode, "GAB_7642", "7642", 3, 4, "00:00:00", V.Local.dLastTime)
+	F.Intrinsic.String.Format(V.Local.dLastTime, "HH:NN:SS", V.Local.sFromTime)
+	
+	'Use date/time from registry if any returns
+	F.Intrinsic.Control.If(V.Local.dLastDate, !=, "1/1/1905", AND, V.Local.sFromTime, !=, "00:00:00")
+		'Return values to use
+		F.Intrinsic.Variable.AddRV("FromDate", V.Local.dLastDate)
+		F.Intrinsic.Variable.AddRV("FromTime", V.Local.sFromTime)
+	
+	'Else generate last time by using OLUs time last ran
+	F.Intrinsic.Control.Else
+		'Get OLU date and time last ran
+		F.Global.General.ReadOption(400956, 2, "", 0000, V.Local.fOLULastRan)
+		'Split option return to convert into last ran date and time
+		F.Intrinsic.String.Split(V.Local.fOLULastRan, ".", V.Local.sDateAndTime)
+		
+		'Set default date value and add returned days to get date last ran
+		V.Local.dDefaultDate.Set("12/30/1899")	
+		F.Intrinsic.Date.DateAdd("D", V.Local.sDateAndTime(0), V.Local.dDefaultDate, V.Local.dLastDate)
+		
+		'Multiply returned decimal by 86400 to get time last ran
+		V.Local.dDefaultTime.Set("1/1/1900 00:00:00")
+		F.Intrinsic.String.Build(".{0}", V.Local.sDateAndTime(1), V.Local.sDateAndTime(1))
+		F.Intrinsic.Math.Mult(V.Local.sDateAndTime(1), 86400, V.Local.fSeconds)
+		F.Intrinsic.Date.DateAdd("S", V.Local.fSeconds, V.Local.dDefaultTime, V.Local.dLastTime)
+		
+		'Read option to get OLU interval
+		F.Global.General.ReadOption(402233, 3, "NONE", 0000, V.Local.iOLUInterval)
+	
+		'Generate time filter. Take time last ran and subtract OLU process interval
+		F.Intrinsic.Math.Mult(V.Local.iOLUInterval, -1, V.Local.iOLUInterval)
+		F.Intrinsic.Date.DateAdd("N", V.Local.iOLUInterval, V.Local.dLastTime, V.Local.dLastTime)
+		'Sub another 15 seconds buffer to account for script running time from last run
+		F.Intrinsic.Date.DateAdd("S", -15, V.Local.dLastTime, V.Local.dLastTime)
+		F.Intrinsic.String.Format(V.Local.dLastTime, "HH:NN:SS", V.Local.sFromTime)
+		
+		'Return values to use
+		F.Intrinsic.Variable.AddRV("FromDate", V.Local.dLastDate)
+		F.Intrinsic.Variable.AddRV("FromTime", V.Local.sFromTime)
+			
+	F.Intrinsic.Control.EndIf
+	
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(Catching,"Sub",V.Ambient.CurrentSubroutine,"ErrorNo",V.Ambient.ErrorNumber,"ErrorDesc",V.Ambient.ErrorDescription) 
+F.Intrinsic.Control.EndTry
+Program.Sub.GenerateLastRanTime.End
+
 Program.Sub.CaptureJ52s.Start
 F.Intrinsic.Control.Try
 
@@ -324,42 +420,18 @@ F.Intrinsic.Control.Try
 	V.Local.sDateAndTime.Declare(String)
 	V.Local.sFromTime.Declare(String)
 	V.Local.fSeconds.Declare(Float)
-	
-	'Capture OLU last ran date and time
-	'---------------------------------------------------------------------------------------------
-	'Get OLU date and time last ran
-	F.Global.General.ReadOption(400956, 2, "", 0000, V.Local.fOLULastRan)
-	'Split option return to convert into last ran date and time
-	F.Intrinsic.String.Split(V.Local.fOLULastRan, ".", V.Local.sDateAndTime)
-	
-	'Set default date value and add returned days to get date last ran
-	V.Local.dDefaultDate.Set("12/30/1899")	
-	F.Intrinsic.Date.DateAdd("D", V.Local.sDateAndTime(0), V.Local.dDefaultDate, V.Local.dLastDate)
-	
-	'Multiply returned decimal by 86400 to get time last ran
-	V.Local.dDefaultTime.Set("1/1/1900 00:00:00")
-	F.Intrinsic.String.Build(".{0}", V.Local.sDateAndTime(1), V.Local.sDateAndTime(1))
-	F.Intrinsic.Math.Mult(V.Local.sDateAndTime(1), 86400, V.Local.fSeconds)
-	F.Intrinsic.Date.DateAdd("S", V.Local.fSeconds, V.Local.dDefaultTime, V.Local.dLastTime)
-	
-	'Read option to get set OLU interval
-	F.Global.General.ReadOption(402233, 3, "NONE", 0000, V.Local.iOLUInterval)
-	'---------------------------------------------------------------------------------------------
-	
-	'Generate time filter. Take time last rand and subtract OLU process interval
-	F.Intrinsic.Math.Mult(V.Local.iOLUInterval, -1, V.Local.iOLUInterval)
-	F.Intrinsic.Date.DateAdd("N", V.Local.iOLUInterval, V.Local.dLastTime, V.Local.dLastTime)
-	'Sub another 15 seconds buffer to account for script running time from last run
-	F.Intrinsic.Date.DateAdd("S", -15, V.Local.dLastTime, V.Local.dLastTime)
-	F.Intrinsic.String.Format(V.Local.dLastTime, "HH:NN:SS", V.Local.sFromTime)
+
+	'Callsub to generate last ran time
+	F.Intrinsic.Control.CallSub(GenerateLastRanTime)
 
 	'Query data for latest J52 transactions after generated date and time
-'	F.Intrinsic.String.Build("Select (JOB + SUFFIX) JOBKEY, PART, LOCATION, JOB, SUFFIX, BIN, QUANTITY from V_ITEM_HISTORY where CODE_TRANSACTION = 'J52' and DATE_HISTORY >= '{0}' and TIME_ITEM_HISTORY > '{1}'", V.Local.dLastDate.PervasiveDate, V.Local.sFromTime, V.Local.sSql)
-'	F.Data.DataTable.CreateFromSQL("dtJ52Temp", "con", V.Local.sSql, True)
-	
-	V.Local.sSql.Set("Select TOP 3 (JOB + SUFFIX) JOBKEY, PART, LOCATION, JOB, SUFFIX, BIN, QUANTITY from V_ITEM_HISTORY where CODE_TRANSACTION = 'J52' and DATE_HISTORY > '2024-7-10' and DATE_HISTORY < '2024-12-01'")
-	
+	F.Intrinsic.String.Build("Select (JOB + SUFFIX) JOBKEY, PART, LOCATION, JOB, SUFFIX, BIN, QUANTITY from V_ITEM_HISTORY where CODE_TRANSACTION = 'J52' and DATE_HISTORY >= '{0}' and TIME_ITEM_HISTORY > '{1}'", V.Args.FromDate.PervasiveDate, V.Args.FromTime, V.Local.sSql)
 	F.Data.DataTable.CreateFromSQL("dtJ52Temp", "con", V.Local.sSql, True)
+	
+	'Use following queries for static INVENTORY_HISTORY records for testing
+	'V.Local.sSql.Set("Select TOP 3 (JOB + SUFFIX) JOBKEY, PART, LOCATION, JOB, SUFFIX, BIN, QUANTITY from V_ITEM_HISTORY where CODE_TRANSACTION = 'J52' and DATE_HISTORY > '2024-7-10' and DATE_HISTORY < '2024-12-01'")
+	'F.Data.DataTable.CreateFromSQL("dtJ52Temp", "con", V.Local.sSql, True)
+
 	
 	'Capture PL for each job
 	F.Data.Dictionary.CreateFromSQL("dictPL", "con", "Select (JOB + SUFFIX) JOBKEY, PRODUCT_LINE from JOB_HEADER")
@@ -383,6 +455,9 @@ F.Intrinsic.Control.Try
 	F.Intrinsic.Control.If(V.DataTable.dtJ52s.RowCount, >, 0)
 		F.Intrinsic.Control.CallSub(ProcessTransfers)
 	F.Intrinsic.Control.EndIf
+	
+	'Update time last ran on registry
+	F.Global.Registry.AddValue(-1, V.Caller.CompanyCode, "GAB_7642", "7642", 3, False, "", False, 0, -999.0, V.Ambient.Date, V.Ambient.Time)
 
 F.Intrinsic.Control.Catch
 	F.Intrinsic.Control.CallSub(Catching,"Sub",V.Ambient.CurrentSubroutine,"ErrorNo",V.Ambient.ErrorNumber,"ErrorDesc",V.Ambient.ErrorDescription) 
@@ -446,6 +521,7 @@ F.Intrinsic.Control.Try
 	GUI.Form.GSGCWCtoBIN.SetColumnProperty("gvWC", "CLR", "MinWidth", 35)
 	GUI.Form.GSGCWCtoBIN.SetColumnProperty("gvWC", "BTN", "MaxWidth", 45)
 	GUI.Form.GSGCWCtoBIN.SetColumnProperty("gvWC", "BTN", "MinWidth", 45)
+	GUI.Form.GSGCWCtoBIN.SetColumnProperty("gvWC", "MACHINE", "Width", 105)
 	
 	
 	'Set captions
@@ -773,7 +849,46 @@ F.Intrinsic.Control.CallSub(Catching,"Sub",V.Ambient.CurrentSubroutine,"ErrorNo"
 F.Intrinsic.Control.EndTry
 Program.Sub.chkEnabled_Click.End
 
+Program.Sub.cmdClearLastRanTime_Click.Start
+F.Intrinsic.Control.Try
+	
+	V.Local.sRet.Declare(String)
+	V.Local.dLastDate.Declare(Date)
+	V.Local.dLastTime.Declare(Date)
+	V.Local.sDateLastRan.Declare(String)
+	V.Local.sTimeLastRan.Declare(String)
+	V.Local.sSql.Declare(String)
+	
+	F.Global.Registry.ReadValue(-1, V.Caller.CompanyCode, "GAB_7642", "7642", 3, 3, "1/1/1905", V.Local.dLastDate)
+	F.Global.Registry.ReadValue(-1, V.Caller.CompanyCode, "GAB_7642", "7642", 3, 4, "00:00:00", V.Local.dLastTime)
+	F.Intrinsic.String.Format(V.Local.dLastDate, "MM/DD/YYYY", V.Local.sDateLastRan)
+	F.Intrinsic.String.Format(V.Local.dLastTime, "HH:NN:SS", V.Local.sTimeLastRan)
+
+	'If a date/time last ran exists
+	F.Intrinsic.Control.If(V.Local.sDateLastRan, !=, "01/01/1905", AND, V.Local.sTimeLastRan, !=, "00:00:00")
+		'Warn of last ran time deletion, exit if cancelled
+		F.Intrinsic.UI.Msgbox("This will clear the program's last ran time and cannot be undone, next run time will be determined by the next online update process time. Continue?", "Warning!", 1, V.Local.sRet)
+		F.Intrinsic.Control.If(V.Local.sRet, =, 2)
+			F.Intrinsic.Control.ExitSub
+		F.Intrinsic.Control.EndIf
+		
+		'Delete date/time last ran
+		F.Intrinsic.String.Build("Delete from GS_REGISTRY where USER_ID = '-1' and COMPANY = '{0}' and PROGRAM = 'GAB_7642' and REG_ID = '7642' and SEQ = '3'", V.Caller.CompanyCode, V.Local.sSql)
+		F.ODBC.Connection!conx.OpenCommonConnection
+		F.ODBC.Connection!conx.Execute(V.Local.sSql)
+		F.ODBC.Connection!conx.Close
+		
+		'Clear time from screen label
+		GUI.Form.lblLastRan.Caption("Auto Bin to Bin Transfer Last Ran: No Time Stored")
+	
+	F.Intrinsic.Control.EndIf
+	
+F.Intrinsic.Control.Catch
+F.Intrinsic.Control.CallSub(Catching,"Sub",V.Ambient.CurrentSubroutine,"ErrorNo",V.Ambient.ErrorNumber,"ErrorDesc",V.Ambient.ErrorDescription) 
+F.Intrinsic.Control.EndTry
+Program.Sub.cmdClearLastRanTime_Click.End
+
 Program.Sub.Comments.Start
 ${$5$}$20.1.8965.27978$}$1
-${$6$}$atudon$}$20240807132613524$}$wHlNQNSPD/BybNtaCJPwGHNwUyiDpx8wdUsix9MiMbMP80ysfU4TjB+v+cIA9sSUbbVhCd9Tt3w=
+${$6$}$atudon$}$20240816152317291$}$wHlNQNSPD/BybNtaCJPwGHNwUyiDpx8wyqZGVIddMmSqvFbfZ/NqVR1TbwnoJ2TVNtZaigS+Yj4=
 Program.Sub.Comments.End
