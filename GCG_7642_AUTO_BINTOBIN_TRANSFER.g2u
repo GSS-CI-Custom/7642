@@ -120,7 +120,7 @@ F.Intrinsic.Control.Try
 	V.Local.bCheck.Declare(Boolean)
 	
 	Function.Intrinsic.UI.UsePixels ' Allows you to use Pixels instead of Twips throughout
-	F.ODBC.Connection!con.OpenCompanyConnection
+	F.ODBC.Connection!con.OpenCompanyConnection(180)
 	
 	'Open maintanance when project is ran from menu item (menu item flag must be set to "Maint")
 	F.Intrinsic.Control.If(V.Caller.Switches, =, "Maint")
@@ -150,7 +150,7 @@ F.Intrinsic.Control.Try
 		
 		GUI.Form..Show
 
-	'If project is ran from OLU post process hook run bin to bin transfer logic
+	'If project is ran from OLU post process hook run bin to bin transfer logic '
 	F.Intrinsic.Control.ElseIf(V.Caller.Hook, =, 38130)
 		'Check enabled option, end if disabled
 		F.Global.Registry.ReadValue(-1, V.Caller.CompanyCode, "GAB_7642", "7642", 2, 0, False, V.Local.bCheck)
@@ -721,6 +721,7 @@ Program.Sub.Form_UnLoad.End
 
 Program.Sub.Catching.Start
 V.Local.sError.Declare(String)
+F.Intrinsic.Control.End
 F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}",V.Caller.ScriptFile,V.Ambient.NewLine,v.Args.sub,V.Args.errorno,V.args.errordesc,V.Local.sError)
 F.Intrinsic.UI.Msgbox(V.Local.sError,"Unhandled Exception")
 F.Intrinsic.Control.End
@@ -890,5 +891,5 @@ Program.Sub.cmdClearLastRanTime_Click.End
 
 Program.Sub.Comments.Start
 ${$5$}$20.1.8965.27978$}$1
-${$6$}$atudon$}$20240816152317291$}$wHlNQNSPD/BybNtaCJPwGHNwUyiDpx8wyqZGVIddMmSqvFbfZ/NqVR1TbwnoJ2TVNtZaigS+Yj4=
+${$6$}$atudon$}$20240820112242239$}$wHlNQNSPD/BybNtaCJPwGHNwUyiDpx8wpoUlLlyR/gYsBeWqO/rb/KjiE07X0nfetQtoEHulN8c=
 Program.Sub.Comments.End
